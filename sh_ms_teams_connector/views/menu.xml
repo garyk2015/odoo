@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- We can place this menu under Settings / Technical -->
+    <menuitem id="menu_sh_teams_notifications_root" 
+              name="Teams Notifications" 
+              parent="base.menu_custom" 
+              sequence="50"/>
+
+    <menuitem id="menu_sh_teams_webhook" 
+              name="Webhooks" 
+              parent="menu_sh_teams_notifications_root" 
+              action="action_sh_teams_webhook" 
+              sequence="10"/>
+</odoo>

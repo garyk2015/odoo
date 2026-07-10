@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_teams" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.teams</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Microsoft Teams Calendar Integration" name="sh_ms_teams_connector" icon="sh_ms_teams_connector/static/description/icon.png">
+
+                    <block title="Microsoft Teams Integration" name="sh_ms_teams_integration">
+                        <setting string="Microsoft Teams Integration" help="Use this section to configure the Excel API integration.">
+
+                            <div class="col-12">
+                                <div class="text-muted mb-3">
+                                    To configure Microsoft Teams integration, you need to:
+                                    <ol>
+                                        <li>Register an application in Azure Portal</li>
+                                        <li>Add API permissions: Calendars.ReadWrite, OnlineMeetings.ReadWrite</li>
+                                        <li>Create a client secret</li>
+                                        <li>Copy the Application (client) ID, Directory (tenant) ID, and client secret below</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="sh_teams_tenant_id" class='me-2' string="Tenant ID"/>
+                                    <field name="sh_teams_tenant_id" class='w-100' placeholder="e.g., your-tenant-id"/>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="sh_teams_client_id" class='me-2' string="Client ID"/>
+                                    <field name="sh_teams_client_id" class='w-100' placeholder="e.g., your-client-id"/>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="sh_teams_client_secret" class='me-2' string="Client Secret"/>
+                                    <field name="sh_teams_client_secret" class='w-100'
+                                        placeholder="e.g., your-client-secret"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

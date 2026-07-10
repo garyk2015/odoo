@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_teams_connection" model="ir.ui.view">
+        <field name="name">res.users.form.teams.connection</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Microsoft Teams" name="microsoft_teams">
+                    <group>
+                        <group string="Connection Details">
+                            <field name="sh_teams_connection_status" widget="badge" 
+                                   decoration-success="sh_teams_connection_status == 'connected'"
+                                   decoration-danger="sh_teams_connection_status == 'not_connected'"/>
+                            <field name="sh_teams_token_expiry" readonly="1" 
+                                   invisible="sh_teams_connection_status!='connected'"/>
+                            <field name="sh_redirect_url" readonly="1" 
+                                   invisible="0"/>
+                        </group>
+                        <group string="Meeting Operations (Automatic/Manual)" invisible="sh_teams_connection_status != 'connected'">
+
+                            <field name="sh_teams_meeting_auto_create" widget="boolean_toggle" 
+                                   invisible="sh_teams_connection_status != 'connected'"/>
+                            <field name="sh_teams_meeting_auto_write" widget="boolean_toggle" 
+                                   invisible="sh_teams_connection_status != 'connected'"/>
+                            <field name="sh_teams_meeting_auto_unlink" widget="boolean_toggle" 
+                                   invisible="sh_teams_connection_status != 'connected'"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <div class="alert alert-info" role="alert" 
+                             invisible="sh_teams_connection_status=='connected'">
+                            <i class="fa fa-info-circle" title="Info"/> 
+                            <strong>Not Connected</strong><br/>
+                            Click "Connect With Teams" below to link your Microsoft Teams account. 
+                            This will allow you to create Teams meetings from calendar events.
+                        </div>
+                        
+                        <div class="alert alert-success" role="alert" 
+                             invisible="sh_teams_connection_status!='connected'">
+                            <i class="fa fa-check-circle" title="Success"/> 
+                            <strong>Connected Successfully</strong><br/>
+                            Your Microsoft Teams account is connected and ready to use.
+                        </div>
+                        <group invisible="not sh_ms_subscription_id">
+                            <field name="sh_ms_subscription_id" readonly="1"/>
+                            <field name="sh_ms_subscription_expiry" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <button name="action_teams_connect" 
+                                string="Connect With Teams" 
+                                type="object" 
+                                class="btn-primary"
+                                icon="fa-plug"
+                                invisible="sh_teams_connection_status=='connected'"/>
+                        
+                        <button name="action_teams_disconnect" 
+                                string="Disconnect Teams" 
+                                type="object" 
+                                class="btn-danger"
+                                icon="fa-unlink"
+                                invisible="sh_teams_connection_status!='connected'"/>
+                    </group>
+                    
+                    <group string="Configuration Information" 
+                           invisible="sh_teams_connection_status=='connected'">
+                        <div class="text-muted">
+                            <p><strong>Required Configuration:</strong></p>
+                            <ul>
+                                <li>Client ID must be configured in Company Settings</li>
+                                <li>Client Secret must be configured in Company Settings</li>
+                                <li>Tenant ID must be configured in Company Settings</li>
+                                <li>Redirect URI must be registered in Azure AD: 
+                                    <code>[Your Odoo URL]/ms_teams/oauth/callback</code>
+                                </li>
+                            </ul>
+                            <p>Contact your administrator if configuration is missing.</p>
+                        </div>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

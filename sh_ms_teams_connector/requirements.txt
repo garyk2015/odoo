@@ -1,0 +1,6 @@
+# Third-party dependencies for sh_ms_teams_connector
+# Odoo: 19 | Python: 3.12
+
+azure-core==1.33.0  #odoo19 |python3.12
+msal==1.31.1  #odoo19 |python3.12
+msgraph-sdk==1.24.0  #odoo19 |python3.12

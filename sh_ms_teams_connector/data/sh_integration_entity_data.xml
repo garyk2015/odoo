@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+<data noupdate="1">
+
+    <record id="sh_ms_teams_connector_entity_calendar_event" model="sh.integration.entity">
+        <field name="connector_id" ref="sh_ms_teams_connector_connector"/>
+        <field name="name">Calendar Event</field>
+        <field name="model_id" ref="calendar.model_calendar_event"/>
+        <field name="domain">[['sh_teams_meeting_id','!=',False]]</field>
+        <field name="icon">fa-database</field>
+        <field name="sequence">1</field>
+    </record>
+
+    <record id="sh_ms_teams_connector_entity_sync_logs" model="sh.integration.entity">
+        <field name="connector_id" ref="sh_ms_teams_connector_connector"/>
+        <field name="name">Sync Logs</field>
+        <field name="model_id" ref="sh_ms_teams_connector.model_sh_ms_teams_sync_log"/>
+        <field name="domain">[]</field>
+        <field name="icon">fa-history</field>
+        <field name="sequence">2</field>
+    </record>
+
+</data>
+</odoo>

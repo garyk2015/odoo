@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sh_teams_webhook_admin,sh.teams.webhook.admin,model_sh_teams_webhook,base.group_system,1,1,1,1
+access_sh_teams_webhook_user,sh.teams.webhook.user,model_sh_teams_webhook,base.group_user,1,0,0,0
+access_sh_ms_teams_calendar,sh.ms.teams.calendar,model_sh_ms_teams_calendar,base.group_user,1,1,1,1
+access_sh_ms_teams_sync_log,sh.ms.teams.sync.log,model_sh_ms_teams_sync_log,base.group_user,1,1,1,1
