@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Custom Form View for Teams Credentials on res.company -->
+    <record id="view_company_teams_credentials_form" model="ir.ui.view">
+        <field name="name">res.company.teams.credentials.form</field>
+        <field name="model">res.company</field>
+        <field name="arch" type="xml">
+            <form string="Microsoft Teams Credentials">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_teams_sync_inbound" type="object" class="oe_stat_button" icon="fa-cloud-download">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Import</span>
+                                <span class="o_stat_text">Events</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group string="Microsoft Teams Integration">
+                        <div class="text-muted" colspan="2" style="margin-bottom: 20px;">
+                            Configure your Microsoft Azure AD App credentials here. 
+                            These details are exactly the same as the ones in the General Settings and are shared automatically.
+                        </div>
+                        <group>
+                            <field name="sh_teams_tenant_id" required="1"/>
+                            <field name="sh_teams_client_id" required="1"/>
+                            <field name="sh_teams_client_secret" required="1" password="True"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Target Microsoft Calendar">
+                        <group>
+                            <label for="sh_user_target_ms_calendar_id" string="Sync Calendar"/>
+                            <div class="o_row">
+                                <field name="sh_user_target_ms_calendar_id" options="{'no_create': True, 'no_open': True}" placeholder="Default (Primary Calendar)"/>
+                                <button name="action_fetch_ms_calendars" type="object" string="Fetch Calendars" icon="fa-download" class="btn-sm btn-link"/>
+                            </div>
+                            <field name="sh_user_ms_last_event_sync_at" readonly="1"/>
+                        </group>
+                        <div class="text-muted" colspan="2" style="margin-top: 10px;">
+                            If empty, events will sync to your default Microsoft Calendar. Select a specific calendar to isolate synced events.
+                        </div>
+                    </group>
+                    
+                    <group string="Automatic Sync Features">
+                        <div class="text-muted" colspan="2" style="margin-bottom: 10px;">
+                            Advanced: You can enable real-time Webhook sync so Microsoft tells Odoo the instant an event is deleted.
+                        </div>
+                        <group>
+                            <button name="action_teams_subscribe_webhook" 
+                                    type="object" 
+                                    string="Enable Microsoft Push Notifications (Deletes)" 
+                                    class="btn-primary" 
+                                    icon="fa-bell"/>
+                        </group>
+                    </group>
+                    <group string="Sync History">
+                        <field name="sh_user_teams_sync_log_ids" nolabel="1" readonly="1">
+                            <list decoration-danger="status == 'error'" decoration-success="status == 'success'">
+                                <field name="create_date" string="Date"/>
+                                <field name="operation_type"/>
+                                <field name="status"/>
+                                <field name="message"/>
+                            </list>
+                        </field>
+                        
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Server Action to open the active company in the custom form -->
+    <record id="action_sh_teams_credentials" model="ir.actions.server">
+        <field name="name">Microsoft Teams Credentials</field>
+        <field name="model_id" ref="base.model_res_company"/>
+        <field name="state">code</field>
+        <field name="code">
+action = {
+    'type': 'ir.actions.act_window',
+    'name': 'Microsoft Teams Credentials',
+    'res_model': 'res.company',
+    'res_id': env.company.id,
+    'view_mode': 'form',
+    'view_id': env.ref('sh_ms_teams_connector.view_company_teams_credentials_form').id,
+    'target': 'current',
+}
+        </field>
+    </record>
+
+    <!-- Top Level Menu -->
+    <menuitem id="menu_sh_ms_teams_root" 
+              name="Microsoft Teams" 
+              sequence="150"
+              web_icon="sh_ms_teams_connector,static/description/icon.png"/>
+
+    <!-- Configuration Submenu -->
+    <menuitem id="menu_sh_ms_teams_config" 
+              name="Configuration" 
+              parent="menu_sh_ms_teams_root" 
+              sequence="100"/>
+
+    <!-- Credentials Menu Item -->
+    <menuitem id="menu_sh_teams_credentials" 
+              name="Credentials" 
+              parent="menu_sh_ms_teams_config" 
+              action="action_sh_teams_credentials" 
+              sequence="10"/>
+</odoo>

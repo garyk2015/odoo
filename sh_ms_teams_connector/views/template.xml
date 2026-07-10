@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Success Template -->
+    <template id="auth_success" name="Teams Authentication Success">
+        <t t-call="web.layout">
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-header bg-success text-white">
+                                <h4 class="mb-0">
+                                    <i class="fa fa-check-circle" title="Success"/> Authentication Successful
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <p class="lead">Your Microsoft Teams account has been connected successfully!</p>
+                                <ul class="list-unstyled">
+                                    <li><strong>User:</strong> <t t-esc="user_name"/></li>
+                                    <li><strong>Token Expiry:</strong> <t t-esc="token_expiry"/></li>
+                                </ul>
+                                <p class="text-muted mt-3">
+                                    You can now create Teams meetings from your calendar events.
+                                </p>
+                                <div class="mt-4">
+                                    <a href="/web#action=calendar.action_calendar_event" class="btn btn-primary">
+                                        <i class="fa fa-calendar" title="Calendar"/> Go to Calendar
+                                    </a>
+                                    <a href="/web#menu_id=base.menu_administration&amp;action=base.action_res_users" 
+                                       class="btn btn-secondary ml-2">
+                                        <i class="fa fa-cog" title="Settings"/> Settings
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Error Template -->
+    <template id="auth_error" name="Teams Authentication Error">
+        <t t-call="web.layout">
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h4 class="mb-0">
+                                    <i class="fa fa-exclamation-triangle" title="Error"/> Authentication Failed
+                                </h4>
+                            </div>
+                            <div class="card-body">
+                                <p class="lead">There was an error connecting to Microsoft Teams.</p>
+                                <div class="alert alert-danger">
+                                    <strong>Error:</strong> <t t-esc="error_message"/>
+                                </div>
+                                <p class="text-muted mt-3">
+                                    Please check your configuration and try again.
+                                </p>
+                                <div class="mt-4">
+                                    <a href="/web#menu_id=base.menu_administration&amp;action=base.action_res_users" 
+                                       class="btn btn-primary">
+                                        <i class="fa fa-refresh" title="Refresh"/> Try Again
+                                    </a>
+                                    <a href="/web" class="btn btn-secondary ml-2">
+                                        <i class="fa fa-home" title="Home"/> Go to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

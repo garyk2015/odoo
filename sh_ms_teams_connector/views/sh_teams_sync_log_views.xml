@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_sh_ms_teams_sync_log_tree" model="ir.ui.view">
+        <field name="name">sh.ms.teams.sync.log.tree</field>
+        <field name="model">sh.ms.teams.sync.log</field>
+        <field name="arch" type="xml">
+            <list string="Sync Logs" default_order="create_date desc" create="false" edit="false">
+                <field name="create_date" string="Date"/>
+                <field name="name"/>
+                <field name="operation_type"/>
+                <field name="status" widget="badge" 
+                       decoration-success="status == 'success'" 
+                       decoration-warning="status == 'warning'" 
+                       decoration-danger="status == 'error'"/>
+                <field name="user_id"/>
+                <field name="calendar_event_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sh_ms_teams_sync_log_form" model="ir.ui.view">
+        <field name="name">sh.ms.teams.sync.log.form</field>
+        <field name="model">sh.ms.teams.sync.log</field>
+        <field name="arch" type="xml">
+            <form string="Sync Log" create="false" edit="false">
+                <header>
+                    <field name="status" widget="statusbar" statusbar_visible="success,warning,error"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="create_date" string="Date"/>
+                            <field name="operation_type"/>
+                            <field name="user_id"/>
+                            <field name="calendar_event_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Log Message">
+                            <field name="message"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sh_teams_sync_log" model="ir.actions.act_window">
+        <field name="name">Sync Logs</field>
+        <field name="res_model">sh.ms.teams.sync.log</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu Item under Microsoft Teams -> Configuration -->
+    <menuitem id="menu_sh_teams_sync_logs" 
+              name="Sync Logs" 
+              parent="sh_ms_teams_connector.menu_sh_ms_teams_config" 
+              action="action_sh_teams_sync_log" 
+              sequence="20"/>
+</odoo>

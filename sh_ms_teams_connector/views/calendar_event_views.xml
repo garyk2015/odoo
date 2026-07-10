@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Calendar Event Form View -->
+    <record id="view_calendar_event_form_teams" model="ir.ui.view">
+        <field name="name">calendar.event.form.teams</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_create_teams_meeting" 
+                            string="Create Teams Meeting" 
+                            type="object" 
+                            class="btn-primary"
+                            invisible="sh_is_teams_meeting"/>
+                    <button name="action_sync_with_teams" 
+                            string="Sync with Teams" 
+                            type="object" 
+                            class="btn-secondary"
+                            invisible="not sh_is_teams_meeting"/>
+                    <button name="action_delete_teams_meeting" 
+                            string="Delete Teams Meetings" 
+                            type="object" 
+                            class="btn-danger"
+                            invisible="not sh_is_teams_meeting"/>
+                    <field name="sh_teams_sync_status" widget="statusbar"/>
+                </header>
+            </xpath>
+            
+            <xpath expr="//field[@name='location']" position="after">
+                <field name="sh_is_teams_meeting"/>
+                <field name="sh_teams_meeting_url" widget="url" 
+                       invisible="not sh_is_teams_meeting"
+                       readonly="1"/>
+                <field name="sh_teams_meeting_id" invisible="1"/>
+                <field name="sh_teams_error_message" 
+                       invisible="sh_teams_sync_status != 'error'"
+                       readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Calendar Event Tree View -->
+    <record id="view_calendar_event_tree_teams" model="ir.ui.view">
+        <field name="name">calendar.event.tree.teams</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='start']" position="after">
+                <field name="sh_is_teams_meeting" widget="boolean_toggle"/>
+                <field name="sh_teams_sync_status" 
+                       decoration-success="sh_teams_sync_status == 'synced'"
+                       decoration-danger="sh_teams_sync_status == 'error'"
+                       decoration-warning="sh_teams_sync_status == 'pending'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
