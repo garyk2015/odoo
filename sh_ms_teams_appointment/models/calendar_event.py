@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) Softhealer Technologies.
+# Copyright (C) Softhealer Technologies Pvt. Ltd.
 
 from odoo import models, fields
 
@@ -31,3 +31,5 @@ class CalendarEvent(models.Model):
                 if record.videocall_source == 'ms_teams' and not record.sh_is_teams_meeting:
                     record.with_context(sh_teams_silent_fail=True).action_create_teams_meeting()
         return res
+
+

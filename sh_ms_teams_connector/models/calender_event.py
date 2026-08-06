@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# Copyright (C) Softhealer Technologies Pvt. Ltd.
+
 from odoo import models, fields, api, _
 from odoo.addons.calendar.models.calendar_recurrence import weekday_to_field
 from odoo.exceptions import UserError
@@ -161,7 +164,14 @@ class CalendarEvent(models.Model):
     def _get_graph_client(self, user=None):
         """Get authenticated Microsoft Graph client using stored refresh token"""
         company = self.env.company
+        public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+        if not user and self and hasattr(self, 'user_id') and self.user_id:
+            if public_user and self.user_id != public_user:
+                user = self.user_id
         user = (user or self.env.user).sudo()
+
+        if public_user and user == public_user:
+            raise UserError(_('Please log in or register your email address to create a Microsoft Teams meeting.'))
 
         if not all([company.sh_teams_client_id, company.sh_teams_client_secret, company.sh_teams_tenant_id]):
             raise UserError(_('Please configure Microsoft Teams credentials in Settings.'))
@@ -199,20 +209,22 @@ class CalendarEvent(models.Model):
                     'location': result.join_web_url,
                     'videocall_location': result.join_web_url,
                 })
-                return {
-                    'type': 'ir.actions.client',
-                    'tag': 'display_notification',
-                    'params': {
-                        'title': _('Success'),
-                        'message': _('Teams meeting created successfully!'),
-                        'type': 'success',
-                        'sticky': False,
-                        'next': {
-                            'type': 'ir.actions.client',
-                            'tag': 'reload',
-                        },                    
+                if not self.env.context.get('sh_teams_silent_fail'):
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'title': _('Success'),
+                            'message': _('Teams meeting created successfully!'),
+                            'type': 'success',
+                            'sticky': False,
+                            'next': {
+                                'type': 'ir.actions.client',
+                                'tag': 'reload',
+                            },                    
+                        }
                     }
-                }
+                return True
             else:
                 raise UserError(_('Failed to create Teams meeting: No response from server'))
                 
@@ -223,18 +235,24 @@ class CalendarEvent(models.Model):
                 'sh_teams_sync_status': 'error',
                 'sh_teams_error_message': error_msg
             })
-            self.env['sh.ms.teams.sync.log'].create({
+            public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+            log_user = self.user_id if (self.user_id and self.user_id != public_user) else self.env.user
+            self.env['sh.ms.teams.sync.log'].sudo().create({
                 'operation_type': 'outbound',
                 'status': 'error',
                 'message': f"Error creating Teams meeting: {error_msg}",
                 'calendar_event_id': self.id,
-                'user_id': self.env.user.id
+                'user_id': log_user.id
             })
-            raise UserError(_('Error creating Teams meeting: %s') % error_msg)
+            if not self.env.context.get('sh_teams_silent_fail'):
+                raise UserError(_('Error creating Teams meeting: %s') % error_msg)
+            return False
 
     async def _async_create_teams_meeting(self):
         """Async helper that performs Graph calls for meeting creation."""
-        graph_client = self._get_graph_client()
+        public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+        user = self.user_id if (self.user_id and self.user_id != public_user) else self.env.user
+        graph_client = self._get_graph_client(user=user)
         
         # Prepare online meeting object
         online_meeting = self._prepare_online_meeting()
@@ -509,7 +527,9 @@ class CalendarEvent(models.Model):
             
             # Create the calendar event
             _logger.info('Creating calendar event in Microsoft Calendar')
-            target_calendar_id = self.env.user.sh_target_ms_calendar_id.ms_calendar_id
+            public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+            target_user = self.user_id if (self.user_id and self.user_id != public_user) else self.env.user
+            target_calendar_id = target_user.sh_target_ms_calendar_id.ms_calendar_id
             if target_calendar_id:
                 result = await graph_client.me.calendars.by_calendar_id(target_calendar_id).events.post(event)
             else:
@@ -518,22 +538,24 @@ class CalendarEvent(models.Model):
             if result and result.id:
                 self.sudo().write({'sh_ms_calendar_event_id': result.id})
                 _logger.info(f'Calendar event created with ID: {result.id}')
-                self.env['sh.ms.teams.sync.log'].create({
+                self.env['sh.ms.teams.sync.log'].sudo().create({
                     'operation_type': 'outbound',
                     'status': 'success',
                     'message': f"Successfully created Teams meeting (ID: {result.id})",
                     'calendar_event_id': self.id,
-                    'user_id': self.env.user.id
+                    'user_id': target_user.id
                 })
             
         except Exception as e:
             _logger.warning(f'Failed to create calendar event: {str(e)}')
-            self.env['sh.ms.teams.sync.log'].create({
+            public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+            log_user = self.user_id if (self.user_id and self.user_id != public_user) else self.env.user
+            self.env['sh.ms.teams.sync.log'].sudo().create({
                 'operation_type': 'outbound',
                 'status': 'error',
                 'message': f"Failed to push to Microsoft Calendar: {str(e)}",
                 'calendar_event_id': self.id,
-                'user_id': self.env.user.id
+                'user_id': log_user.id
             })
 
     def action_sync_with_teams(self):
@@ -571,17 +593,24 @@ class CalendarEvent(models.Model):
                 'sh_teams_sync_status': 'error',
                 'sh_teams_error_message': error_msg
             })
-            self.env['sh.ms.teams.sync.log'].create({
+            public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+            log_user = self.user_id if (self.user_id and self.user_id != public_user) else self.env.user
+            self.env['sh.ms.teams.sync.log'].sudo().create({
                 'operation_type': 'outbound',
                 'status': 'error',
                 'message': f"Error updating Teams meeting: {error_msg}",
                 'calendar_event_id': self.id,
-                'user_id': self.env.user.id
+                'user_id': log_user.id
             })
+            if not self.env.context.get('sh_teams_silent_fail'):
+                raise UserError(_('Error updating Teams meeting: %s') % error_msg)
+            return False
 
     async def _async_update_teams_meeting(self):
         """Async helper that performs Graph calls for meeting updates."""
-        graph_client = self._get_graph_client()
+        public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+        user = self.user_id if (self.user_id and self.user_id != public_user) else self.env.user
+        graph_client = self._get_graph_client(user=user)
         
         # Prepare updated meeting data
         online_meeting = self._prepare_online_meeting()
@@ -757,8 +786,10 @@ class CalendarEvent(models.Model):
         if self.env.context.get('sh_teams_sync_inbound'):
             return records
             
-        if self.env.user.sh_teams_meeting_auto_create:
-            for record in records:
+        for record in records:
+            public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+            event_user = record.user_id if (record.user_id and record.user_id != public_user) else self.env.user
+            if event_user.sh_teams_meeting_auto_create:
                 record.action_create_teams_meeting()
         return records
 
@@ -784,8 +815,10 @@ class CalendarEvent(models.Model):
         if self.env.context.get('sh_teams_sync_inbound'):
             return res
 
-        if self.env.user.sh_teams_meeting_auto_write:
-            for record in self:
+        for record in self:
+            public_user = self.env.ref('base.public_user', raise_if_not_found=False)
+            event_user = record.user_id if (record.user_id and record.user_id != public_user) else self.env.user
+            if event_user.sh_teams_meeting_auto_write:
                 # Make auto update only if any teams meeting created from this record
                 if record.sh_is_teams_meeting and record.sh_teams_meeting_id:
                     record._update_teams_meeting()
