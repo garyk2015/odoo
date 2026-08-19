@@ -1,0 +1,3 @@
+[submodule "viegli_price_checker"]
+	path = viegli_price_checker
+	url = https://github.com/garyk2015/Quck-Price-Check.git
