@@ -1,8 +1,0 @@
-[submodule "viegli_price_checker"]
-	path = viegli_price_checker
-	url = https://github.com/garyk2015/Quck-Price-Check.git
-
-[submodule "garyk2015/Quck-Price-Check"]
-	path = garyk2015/Quck-Price-Check
-	url = git@github.com:garyk2015/Quck-Price-Check.git
-	branch = main
