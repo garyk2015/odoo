@@ -1,0 +1,52 @@
+<odoo>
+    <record id="view_reseller_price_checker_form" model="ir.ui.view">
+        <field name="name">reseller.price.checker.form</field>
+        <field name="model">reseller.price.checker</field>
+        <field name="arch" type="xml">
+            <form string="Quick Reseller Price Check" create="false" delete="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>Quick Reseller Price Lookup</h2>
+                    </div>
+                    <group>
+                        <group string="1. Reseller / Account">
+                            <field name="partner_id" placeholder="Search customer name..."/>
+                            <field name="pricelist_id" options="{'no_create': True}"/>
+                        </group>
+                        <group string="2. Product / SKU">
+                            <field name="product_id" placeholder="Type SKU / Internal Reference..."/>
+                            <field name="categ_id"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <separator string="Pricing Calculation"/>
+                    <group col="3">
+                        <field name="list_price" widget="monetary"/>
+                        <field name="effective_discount" widget="percentage"/>
+                        <field name="reseller_price" widget="monetary" decoration-bf="1" decoration-success="1" style="font-size: 1.4em;"/>
+                    </group>
+
+                    <footer>
+                        <button name="action_reset" string="Check Another SKU" type="object" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action that auto-opens a new blank transient record -->
+    <record id="action_reseller_price_checker" model="ir.actions.act_window">
+        <field name="name">Quick Price Lookup</field>
+        <field name="res_model">reseller.price.checker</field>
+        <field name="view_mode">form</field>
+        <field name="target">current</field>
+    </record>
+
+    <!-- Top-level Sales Menu Item -->
+    <menuitem id="menu_reseller_price_checker"
+              name="Quick Price Lookup"
+              parent="sale.sale_menu_root"
+              action="action_reseller_price_checker"
+              sequence="2"/>
+</odoo>
