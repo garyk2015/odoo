@@ -9,13 +9,20 @@
                         <h2>Quick Reseller Price Lookup</h2>
                     </div>
                     <group>
+                        <!-- Left Column: Customer & Pricelist -->
                         <group string="1. Reseller / Account">
                             <field name="partner_id" placeholder="Search customer name..."/>
                             <field name="pricelist_id" options="{'no_create': True}"/>
                         </group>
+
+                        <!-- Right Column: Product & Stock On Hand -->
                         <group string="2. Product / SKU">
                             <field name="product_id" placeholder="Type SKU / Internal Reference..."/>
                             <field name="categ_id"/>
+                            <field name="qty_available" 
+                                   decoration-danger="qty_available &lt;= 0" 
+                                   decoration-success="qty_available &gt; 0" 
+                                   decoration-bf="1"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
@@ -40,6 +47,7 @@
         </field>
     </record>
 
+    <!-- Action definition -->
     <record id="action_reseller_price_checker" model="ir.actions.act_window">
         <field name="name">Quick Price Lookup</field>
         <field name="res_model">reseller.price.checker</field>
@@ -47,6 +55,7 @@
         <field name="target">current</field>
     </record>
 
+    <!-- Top-level Sales Menu Item -->
     <menuitem id="menu_reseller_price_checker"
               name="Quick Price Lookup"
               parent="sale.sale_menu_root"

@@ -92,6 +92,24 @@ class ResellerPriceChecker(models.TransientModel):
         readonly=True
     )
 
+    # Stock Availability Fields
+    qty_available = fields.Float(
+        string='Quantity On Hand',
+        related='product_id.qty_available',
+        readonly=True
+    )
+    virtual_available = fields.Float(
+        string='Forecasted Qty',
+        related='product_id.virtual_available',
+        readonly=True
+    )
+    uom_id = fields.Many2one(
+        'uom.uom',
+        string='Unit of Measure',
+        related='product_id.uom_id',
+        readonly=True
+    )
+
     @api.depends('partner_id')
     def _compute_pricelist(self):
         for rec in self:
