@@ -44,7 +44,7 @@
         <field name="name">Quick Price Lookup</field>
         <field name="res_model">reseller.price.checker</field>
         <field name="view_mode">form</field>
-        <field name="target">current</field>
+        <field name="target">inline</field>
     </record>
 
     <menuitem id="menu_reseller_price_checker"

@@ -3,12 +3,28 @@ from odoo import models, fields, api # type: ignore
 class ResellerPriceChecker(models.TransientModel):
     _name = 'reseller.price.checker'
     _description = 'Reseller Quick Price Check'
+    _rec_name = 'display_name'
 
+    display_name = fields.Char(
+        string='Name', 
+        compute='_compute_display_name'
+    )
+
+    @api.depends('partner_id', 'product_id')
+    def _compute_display_name(self):
+        for rec in self:
+            if rec.partner_id and rec.product_id:
+                rec.display_name = f"{rec.partner_id.name} | {rec.product_id.default_code or rec.product_id.name}"
+            elif rec.partner_id:
+                rec.display_name = f"Price Lookup - {rec.partner_id.name}"
+            else:
+                rec.display_name = "Quick Price Lookup"
     partner_id = fields.Many2one(
         'res.partner', 
         string='Reseller / Customer', 
         required=True
     )
+    
     pricelist_id = fields.Many2one(
         'product.pricelist', 
         string='Assigned Pricelist / Band', 
