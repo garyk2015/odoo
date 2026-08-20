@@ -20,11 +20,16 @@
                         </group>
                     </group>
 
-                    <separator string="Pricing Calculation"/>
-                    <group col="3">
+                    <separator string="Pricing &amp; Cost Calculation"/>
+                    <group col="4">
                         <field name="list_price" widget="monetary"/>
                         <field name="effective_discount" widget="percentage"/>
+                        <field name="cost_price" widget="monetary"/>
                         <field name="reseller_price" widget="monetary" decoration-bf="1" decoration-success="1" style="font-size: 1.4em;"/>
+                    </group>
+                    <group col="2">
+                        <field name="margin" widget="monetary"/>
+                        <field name="margin_percent" widget="percentage"/>
                     </group>
 
                     <footer>
@@ -35,7 +40,6 @@
         </field>
     </record>
 
-    <!-- Action that auto-opens a new blank transient record -->
     <record id="action_reseller_price_checker" model="ir.actions.act_window">
         <field name="name">Quick Price Lookup</field>
         <field name="res_model">reseller.price.checker</field>
@@ -43,7 +47,6 @@
         <field name="target">current</field>
     </record>
 
-    <!-- Top-level Sales Menu Item -->
     <menuitem id="menu_reseller_price_checker"
               name="Quick Price Lookup"
               parent="sale.sale_menu_root"

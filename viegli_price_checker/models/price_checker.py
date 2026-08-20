@@ -47,6 +47,12 @@ class ResellerPriceChecker(models.TransientModel):
         compute='_compute_pricing',
         readonly=True
     )
+    cost_price = fields.Monetary(
+        string='Vendor Cost Price',
+        currency_field='currency_id',
+        compute='_compute_pricing',
+        readonly=True
+    )
     reseller_price = fields.Monetary(
         string='Reseller Net Price', 
         currency_field='currency_id',
@@ -58,12 +64,22 @@ class ResellerPriceChecker(models.TransientModel):
         compute='_compute_pricing', 
         readonly=True
     )
+    margin = fields.Monetary(
+        string='Gross Profit Margin',
+        currency_field='currency_id',
+        compute='_compute_pricing',
+        readonly=True
+    )
+    margin_percent = fields.Float(
+        string='Margin %',
+        compute='_compute_pricing',
+        readonly=True
+    )
 
     @api.depends('partner_id')
     def _compute_pricelist(self):
         for rec in self:
             if rec.partner_id:
-                # Automatically extracts the partner's assigned pricelist/discount band
                 rec.pricelist_id = rec.partner_id.property_product_pricelist
             else:
                 rec.pricelist_id = False
@@ -71,26 +87,56 @@ class ResellerPriceChecker(models.TransientModel):
     @api.depends('partner_id', 'pricelist_id', 'product_id')
     def _compute_pricing(self):
         for rec in self:
-            if rec.pricelist_id and rec.product_id:
-                # Odoo's native engine resolves all category discounts and specific rules
-                net_price = rec.pricelist_id._get_product_price(
-                    rec.product_id, 
-                    1.0, 
-                    partner=rec.partner_id
-                )
-                rec.reseller_price = net_price
-                rec.list_price = rec.product_id.list_price
-                
-                if rec.list_price > 0:
-                    rec.effective_discount = round(
-                        ((rec.list_price - net_price) / rec.list_price) * 100, 2
+            if rec.product_id:
+                # 1. Fetch Vendor Cost Price (checks Mitel supplierinfo, falls back to standard cost)
+                supplier = rec.product_id.seller_ids.filtered(
+                    lambda s: 'mitel' in (s.partner_id.name or '').lower() and (not s.currency_id or s.currency_id == rec.currency_id)
+                ) or rec.product_id.seller_ids[:1]
+
+                rec.cost_price = supplier[0].price if supplier else rec.product_id.standard_price
+
+                # 2. Reseller Net Price calculation
+                if rec.pricelist_id:
+                    net_price = rec.pricelist_id._get_product_price(
+                        rec.product_id, 
+                        1.0, 
+                        partner=rec.partner_id
                     )
                 else:
+                    net_price = rec.product_id.lst_price
+
+                rec.reseller_price = net_price
+
+                # 3. Resolve Public List Price
+                # Check for a base Public pricelist first; fallback to lst_price
+                public_pl = rec.env['product.pricelist'].search([('name', 'ilike', 'Public')], limit=1)
+                if public_pl:
+                    base_list = public_pl._get_product_price(rec.product_id, 1.0)
+                else:
+                    base_list = rec.product_id.lst_price or rec.product_id.list_price
+
+                # If list price is lower than reseller price or still £1 default, align to base calculation
+                rec.list_price = base_list if base_list > 1.0 else net_price
+
+                # 4. Effective Discount calculation (Float 0.0 - 1.0 for widget="percentage")
+                if rec.list_price and rec.list_price > rec.reseller_price:
+                    rec.effective_discount = (rec.list_price - rec.reseller_price) / rec.list_price
+                else:
                     rec.effective_discount = 0.0
+
+                # 5. Margin Calculations
+                rec.margin = rec.reseller_price - rec.cost_price
+                if rec.reseller_price > 0:
+                    rec.margin_percent = rec.margin / rec.reseller_price
+                else:
+                    rec.margin_percent = 0.0
             else:
                 rec.list_price = 0.0
+                rec.cost_price = 0.0
                 rec.reseller_price = 0.0
                 rec.effective_discount = 0.0
+                rec.margin = 0.0
+                rec.margin_percent = 0.0
 
     def action_reset(self):
         """Quick button to clear fields for the next telephone enquiry"""
